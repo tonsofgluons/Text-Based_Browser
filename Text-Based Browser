@@ -1,0 +1,45 @@
+import sys
+import os
+import requests
+from colorama import Fore
+from bs4 import BeautifulSoup
+
+# write your code here
+args = sys.argv
+dir_name = args[-1]
+if not os.path.exists(dir_name):
+    os.mkdir(dir_name)
+history = []
+user_input = input()
+while user_input != 'exit':
+    if user_input == 'back':
+        history.pop()
+        previous_user_input = history[-1]
+        file_name = previous_user_input.replace('.', '_')
+        f = open(dir_name + '\\' + file_name, 'r')
+        print(f)
+        f.close()
+    else:
+        url = 'https://' + user_input
+        try:
+            r = requests.get(url)
+        except requests.exceptions.ConnectionError:
+            print('Incorrect URL')
+        else:
+            soup = BeautifulSoup(r.content, "html.parser")
+            # text = soup.get_text()
+            file_name = user_input.replace('.', '_')
+            f = open(dir_name + '\\' + file_name, 'w')
+            tags = soup.find_all(['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'a', 'ul', 'ol', 'li'])
+            for tag in tags:
+                if tag.name == 'a':
+                    s = Fore.BLUE + tag.text.strip()
+                    print(s)
+                    f.write(s + '\n')
+                else:
+                    s = tag.text.strip()
+                    print(s)
+                    f.write(s + '\n')
+            f.close()
+            history.append(user_input)
+    user_input = input()
